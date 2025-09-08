@@ -45,23 +45,5 @@ export async function pollValuePollingResult(jobId: string): Promise<{ status: s
     return response.json();
 }
 
-export async function uploadValueSSE(
-    excelFiles: File[], 
-    pdfFiles: File[]
-): Promise<{ job_id: string }> {
-    const formData = new FormData();
-    excelFiles.forEach(file => formData.append('excel', file));
-    pdfFiles.forEach(file => formData.append('pdfs', file));
 
-    const response = await fetch(`${API_BASE}/value/upload_sse`, {
-        method: 'POST',
-        body: formData,
-    });
-
-    if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ detail: '未知錯誤' }));
-        throw new Error(errorData.detail || '上傳失敗');
-    }
-    return response.json();
-}
 

@@ -7,7 +7,6 @@ import traceback
 from app.core.job_manager import job_statuses
 from app.core.storage import storage_service
 from app.services.aoai_processing_service import process_aoai_job
-from app.utils.sse import sse_manager
 
 logger = logging.getLogger(__name__)
 
@@ -21,8 +20,6 @@ async def process_files(job_id: str, excel_paths: List[Path], pdf_paths: List[Pa
         logger.info(f"[{job_id}] Status: {message}")
         if job_type == "polling":
             job_statuses[job_id] = {"status": "processing", "message": message, "download_url": None, "query_fields": None, "query_targets": None}
-        elif job_type == "sse":
-            await sse_manager.send_event(job_id, "status", {"message": message, "status": "processing"})
 
     try:
         logger.info(f"[process_files] Start job_id={job_id}, job_type={job_type}")
@@ -55,8 +52,6 @@ async def process_files(job_id: str, excel_paths: List[Path], pdf_paths: List[Pa
 
         if job_type == "polling":
             job_statuses[job_id] = final_result
-        elif job_type == "sse":
-            await sse_manager.send_event(job_id, "result", final_result)
         
         logger.info(f"[process_files] Done job_id={job_id}")
 
@@ -66,8 +61,3 @@ async def process_files(job_id: str, excel_paths: List[Path], pdf_paths: List[Pa
         
         if job_type == "polling":
             job_statuses[job_id] = error_message
-        elif job_type == "sse":
-            try:
-                await sse_manager.send_event(job_id, "error", error_message)
-            except Exception as sse_e:
-                logger.error(f"Failed to send SSE error event for job {job_id}: {sse_e}")

@@ -2,7 +2,6 @@ import { Link, Route, Switch } from "wouter";
 import Home from "./pages/Home";
 import AltPage from "./pages/AltPage";
 import ValuePage from "./pages/ValuePage";
-import Value2Page from "./pages/Value2"; // Import Value2Page
 
 function App() {
   return (
@@ -16,13 +15,10 @@ function App() {
           </Link>
           <div className="space-x-4">
             <Link href="/alt">
-              <a className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400">Alt 頁面</a>
+              <a className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400">找替代料</a>
             </Link>
             <Link href="/value">
-              <a className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400">找值 (舊版)</a>
-            </Link>
-            <Link href="/value2">
-              <a className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400">找值 (SSE 測試版)</a>
+              <a className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400">找值</a>
             </Link>
           </div>
         </nav>
@@ -32,7 +28,6 @@ function App() {
           <Route path="/" component={Home} />
           <Route path="/alt" component={AltPage} />
           <Route path="/value" component={ValuePage} />
-          <Route path="/value2" component={Value2Page} /> {/* New route for Value2Page */}
           <Route>
             <div className="text-center text-2xl font-bold text-gray-700 dark:text-gray-300">
               404: 頁面不存在
