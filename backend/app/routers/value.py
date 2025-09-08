@@ -19,19 +19,19 @@ logger = logging.getLogger(__name__)
 @router.post("/upload_polling", response_model=JobResponse)
 async def upload_for_value_search_polling(
     background_tasks: BackgroundTasks,
-    excels: List[UploadFile] = File(...),
+    excel: UploadFile = File(...),
     pdfs: List[UploadFile] = File(...)
 ):
-    validate_files(excels + pdfs, settings)
+    validate_files([excel] + pdfs, settings)
 
     job_id = str(uuid.uuid4())
     logger.info(f"[upload_polling] job_id=%s accepting files", job_id)
     logger.info("[upload_polling] pid=%s", os.getpid())
     
-    saved_excel_paths = [await storage_service.save_upload(f) for f in excels]
+    saved_excel_path = await storage_service.save_upload(excel)
     saved_pdf_paths = [await storage_service.save_upload(f) for f in pdfs]
 
-    asyncio.create_task(process_files(job_id, saved_excel_paths, saved_pdf_paths, job_type="polling"))
+    asyncio.create_task(process_files(job_id, [saved_excel_path], saved_pdf_paths, job_type="polling"))
     logger.info(f"[upload_polling] job_id=%s scheduled process_files", job_id)
     
     return {"job_id": job_id}
@@ -39,19 +39,19 @@ async def upload_for_value_search_polling(
 @router.post("/upload_sse", response_model=JobResponse)
 async def upload_for_value_search_sse(
     background_tasks: BackgroundTasks,
-    excels: List[UploadFile] = File(...),
+    excel: UploadFile = File(...),
     pdfs: List[UploadFile] = File(...)
 ):
-    validate_files(excels + pdfs, settings)
+    validate_files([excel] + pdfs, settings)
 
     job_id = str(uuid.uuid4())
     logger.info(f"[upload_sse] job_id=%s accepting files", job_id)
     logger.info("[upload_sse] pid=%s", os.getpid())
     
-    saved_excel_paths = [await storage_service.save_upload(f) for f in excels]
+    saved_excel_path = await storage_service.save_upload(excel)
     saved_pdf_paths = [await storage_service.save_upload(f) for f in pdfs]
 
-    asyncio.create_task(process_files(job_id, saved_excel_paths, saved_pdf_paths, job_type="sse"))
+    asyncio.create_task(process_files(job_id, [saved_excel_path], saved_pdf_paths, job_type="sse"))
     logger.info(f"[upload_sse] job_id=%s scheduled process_files", job_id)
     
     return {"job_id": job_id}

@@ -4,7 +4,7 @@ from pathlib import Path
 from fastapi import UploadFile
 from typing import Dict, Union
 
-from app.core.config import settings
+from .config import settings
 
 download_registry: Dict[str, Path] = {}
 

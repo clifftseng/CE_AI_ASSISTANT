@@ -1,5 +1,8 @@
 import os
-from fastapi import FastAPI
+from pathlib import Path
+from fastapi import FastAPI, Request
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
 from app.routers import alt, value, download
@@ -8,7 +11,7 @@ from app.routers import alt, value, download
 os.makedirs(settings.DATA_DIR, exist_ok=True)
 
 app = FastAPI(
-    title="CE AI Assistant", # Changed title
+    title="CE AI Assistant",
     description="包含 SSE 和檔案處理的範例",
     version="1.0.0",
 )
@@ -21,6 +24,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# API routes
 app.include_router(alt.router, prefix="/api/alt", tags=["alt"])
 app.include_router(value.router, prefix="/api/value", tags=["value"])
 app.include_router(download.router, prefix="/api/download", tags=["download"])
@@ -28,3 +32,19 @@ app.include_router(download.router, prefix="/api/download", tags=["download"])
 @app.get("/api/health", tags=["Health Check"])
 def health_check():
     return {"status": "ok"}
+
+# SPA static files
+STATIC_DIR = (Path(__file__).resolve().parent.parent / "static")
+
+# Mount the assets directory specifically
+if (STATIC_DIR / "assets").exists():
+    app.mount("/assets", StaticFiles(directory=(STATIC_DIR / "assets")), name="assets")
+
+# Catch-all route to serve index.html for any other path
+@app.get("/{full_path:path}")
+async def serve_spa(request: Request, full_path: str):
+    index_path = STATIC_DIR / "index.html"
+    if index_path.exists():
+        return FileResponse(index_path)
+    # This fallback should ideally not be hit if your frontend build is correct
+    return FileResponse(status_code=404)

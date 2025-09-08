@@ -21,7 +21,7 @@ export async function uploadValuePolling(
     pdfFiles: File[]
 ): Promise<{ job_id: string }> {
     const formData = new FormData();
-    excelFiles.forEach(file => formData.append('excels', file));
+    excelFiles.forEach(file => formData.append('excel', file));
     pdfFiles.forEach(file => formData.append('pdfs', file));
 
     const response = await fetch(`${API_BASE}/value/upload_polling`, {
@@ -50,7 +50,7 @@ export async function uploadValueSSE(
     pdfFiles: File[]
 ): Promise<{ job_id: string }> {
     const formData = new FormData();
-    excelFiles.forEach(file => formData.append('excels', file));
+    excelFiles.forEach(file => formData.append('excel', file));
     pdfFiles.forEach(file => formData.append('pdfs', file));
 
     const response = await fetch(`${API_BASE}/value/upload_sse`, {
