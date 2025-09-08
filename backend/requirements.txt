@@ -1,0 +1,21 @@
+fastapi
+fastapi
+uvicorn
+python-multipart
+aiofiles
+
+# Added for AOAI processing
+python-dotenv
+openpyxl
+pandas
+azure-ai-formrecognizer==3.3.2
+openai==1.102.0
+
+pydantic-settings
+python-multipart
+aiofiles
+sse-starlette
+pytest
+httpx
+typing-extensions
+openpyxl

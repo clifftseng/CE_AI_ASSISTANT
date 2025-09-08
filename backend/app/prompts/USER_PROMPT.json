@@ -1,0 +1,30 @@
+===== USER_PROMPT (role=user) =====
+{
+  "docs": [
+    {{#each docs}}
+    {
+      "id": "{{this.id}}",
+      "title": "{{this.title}}",
+      "ocr_json": {{this.ocr_json}}
+    }{{#unless @last}},{{/unless}}
+    {{/each}}
+  ],
+  "targets": {
+    "pns": [
+      {{#each targets.pns}}
+      "{{this}}"{{#unless @last}},{{/unless}}
+      {{/each}}
+    ],
+    "items": [
+      {{#each targets.items}}
+      "{{this}}"{{#unless @last}},{{/unless}}
+      {{/each}}
+    ]
+  },
+  "options": {
+    "suffix_map": {{#if options.suffix_map}}{{options.suffix_map}}{{else}}{}{{/if}},
+    "language": "{{#if options.language}}{{options.language}}{{else}}zh-TW{{/if}}",
+    "return_source_excerpt": {{#if options.return_source_excerpt}}{{options.return_source_excerpt}}{{else}}false{{/if}}
+  },
+  "excel_context": {{#if excel_context}}{{excel_context}}{{else}}{}{{/if}}
+}
