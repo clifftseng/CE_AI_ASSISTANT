@@ -1,18 +1,71 @@
 # Website Project
 
-## 嚴格的驗收條件
+# CE_AI_ASSISTANT
 
-- 使用 `uvicorn app.main:app --reload --port 8000`（單一 worker）。
-- 前端在 `http://localhost:8080`。
-- 上傳 1 個 `.xlsx` + ≥1 個 `.pdf`。
-- 在瀏覽器 DevTools → Network 看到 `GET /api/value/subscribe/<job_id>` 型別 `EventStream`。
-- 在 5 秒內收到第一則 `status` 事件，整個過程至少 2 則 `status`，最後 1 則 `result`（含 `download_url`、`query_fields`、`query_targets`）。
+AI-powered assistant with a **FastAPI** backend and a **Vite + React + TypeScript** frontend.  
+Containerized with **Docker Compose** and integrates with Azure services (e.g., Azure OpenAI, Azure Form Recognizer).
 
-## Directory Structure
+---
 
-- `aoai_method/`: Contains the Azure OpenAI method for document processing.
-- `backend/`: FastAPI backend application.
-- `frontend/`: Vite React frontend application.
+## Project Structure
+backend/ # FastAPI application
+frontend/ # Vite + React + TypeScript app
+nginx/ # Nginx config for reverse proxy (if used)
+docker-compose.yml # Multi-service local/dev setup
+
+---
+
+## Prerequisites
+
+- **Python 3.11+** (for backend)
+- **Node.js 18+** (for frontend)
+- **Docker & Docker Compose** (optional but recommended)
+- Azure credentials stored in environment variables (do NOT hardcode secrets)
+
+---
+
+## Environment Variables
+
+Create a local `.env` (do not commit it). Example:
+```
+Backend
+
+FRONTEND_ORIGIN=http://localhost:8080
+
+DATA_DIR=.data
+
+Azure (examples; do not share real values)
+
+AZURE_OPENAI_ENDPOINT=https://xxx.openai.azure.com/
+
+AZURE_OPENAI_KEY=your_key_here
+FORM_RECOGNIZER_ENDPOINT=https://xxx.cognitiveservices.azure.com/
+
+FORM_RECOGNIZER_KEY=your_key_here
+```
+
+---
+
+## Run Locally (without Docker)
+
+### Backend
+```bash
+# 1) create venv & install deps
+python -m venv .venv
+# Windows PowerShell:
+. .\.venv\Scripts\Activate.ps1
+# Windows CMD:
+# .venv\Scripts\activate
+pip install -r backend/requirements.txt
+
+# 2) set env vars (PowerShell)
+$env:FRONTEND_ORIGIN="http://localhost:8080"
+$env:DATA_DIR=".data"
+
+# 3) run FastAPI with a single worker (SSE requires 1 worker)
+cd backend
+uvicorn app.main:app --host 0.0.0.0 --port 8000 --workers 1
+```
 
 ## Getting Started
 
