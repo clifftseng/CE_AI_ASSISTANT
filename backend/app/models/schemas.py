@@ -1,6 +1,7 @@
 # backend/app/models/schemas.py
 from pydantic import BaseModel
-from typing import List  # Added List import
+from typing import List
+from datetime import datetime
 
 # --- Core Data Models ---
 
@@ -18,8 +19,8 @@ class JobResponse(BaseModel):
 class ValueResultResponse(BaseModel):
     status: str
     download_url: str | None
-    query_fields: List[str] | None = None  # Added
-    query_targets: List[str] | None = None  # Added
+    query_fields: List[str] | None = None
+    query_targets: List[str] | None = None
 
 class SSEProgress(BaseModel):
     percent: int
@@ -34,3 +35,31 @@ class SSEDone(BaseModel):
 class SSEMetadata(BaseModel):
     query_fields: List[str]
     query_targets: List[str]
+
+# --- MongoDB Models ---
+
+class SourceFile(BaseModel):
+    filename: str
+    uploadedAt: datetime
+
+class SpecItem(BaseModel):
+    key: str
+    value: str | int | None
+    unit: str | None = None
+    aliases: List[str] = []
+    status: str # "confirmed"|"edited"|"incorrect"|"pending"
+    sourceFiles: List[SourceFile] = []
+    lastUpdatedAt: datetime
+    lastUpdatedBy: str
+    notes: str | None = None
+
+class Part(BaseModel):
+    partNo: str
+    manufacturer: str | None = None
+    specs: List[SpecItem] = []
+    createdAt: datetime
+    updatedAt: datetime
+
+class FieldAlias(BaseModel):
+    canonical: str
+    aliases: List[str] = []
