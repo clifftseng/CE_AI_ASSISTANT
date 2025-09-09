@@ -3,6 +3,7 @@ import { DropArea } from '@/components/DropArea';
 import { uploadValuePolling, pollValuePollingResult } from '@/lib/api';
 import { FileRejection } from 'react-dropzone';
 import { AlertTriangle, CheckCircle, Loader2 } from 'lucide-react';
+import { parseHeadersAndRows, toHtmlTable } from '../lib/xlsxPreview';
 
 type Status = 'idle' | 'uploading' | 'polling' | 'done' | 'error';
 
@@ -17,6 +18,7 @@ const ValuePage = () => {
   const [queryTargets, setQueryTargets] = useState<string[] | null>(null);
   const [processingMessages, setProcessingMessages] = useState<string[]>([]);
   const [excelPreviewContent, setExcelPreviewContent] = useState<string | null>(null); // New state for Excel preview HTML
+  const [previewMode, setPreviewMode] = useState<'none' | 'dummy' | 'real'>('none'); // 新增預覽模式狀態
 
   const resetState = useCallback(() => {
     setExcelFiles([]);
@@ -29,9 +31,14 @@ const ValuePage = () => {
     setQueryTargets(null);
     setProcessingMessages([]);
     setExcelPreviewContent(null); // Reset Excel preview content
+    setPreviewMode('none'); // Reset preview mode
   }, []);
 
   const onDrop = useCallback((accepted: File[], rejected: FileRejection[]) => {
+    // 重置預覽模式和內容，因為檔案已更改
+    setPreviewMode('none');
+    setExcelPreviewContent(null);
+
     const newExcelFiles: File[] = [];
     const newPdfFiles: File[] = [];
 
@@ -80,6 +87,9 @@ const ValuePage = () => {
   const handleRemoveFile = useCallback((fileName: string) => {
     setExcelFiles(prev => prev.filter(file => file.name !== fileName));
     setPdfFiles(prev => prev.filter(file => file.name !== fileName));
+    // 重置預覽模式和內容，因為檔案已更改
+    setPreviewMode('none');
+    setExcelPreviewContent(null);
   }, []);
 
   const handleSubmit = async () => {
@@ -97,6 +107,7 @@ const ValuePage = () => {
     setStatus('uploading');
     setError(null);
     setProcessingMessages([]); // Clear messages on new submission
+    setPreviewMode('real'); // 進入正式處理模式
 
     try {
       const result = await uploadValuePolling(excelFiles, pdfFiles);
@@ -105,6 +116,27 @@ const ValuePage = () => {
     } catch (err) {
       setStatus('error');
       setError(err instanceof Error ? err.message : '上傳失敗，請稍後再試。');
+    }
+  };
+
+  const handleDummyPreview = async () => {
+    if (excelFiles.length !== 1) {
+      alert('需要至少 1 個 Excel 才能快速預覽');
+      return;
+    }
+
+    const file = excelFiles[0];
+    try {
+      const { headers, rows } = await parseHeadersAndRows(file);
+      const tableHtml = toHtmlTable(headers, rows);
+      setExcelPreviewContent(tableHtml);
+      setPreviewMode('dummy');
+      setError(null); // Clear any previous errors
+    } catch (err) {
+      console.error('Dummy preview failed:', err);
+      setError(err instanceof Error ? err.message : '快速預覽失敗。');
+      setExcelPreviewContent(null);
+      setPreviewMode('none');
     }
   };
 
@@ -221,18 +253,27 @@ const ValuePage = () => {
             </div>
           )}
 
-          <button
-            onClick={handleSubmit}
-            disabled={status === 'uploading' || status === 'polling' || excelFiles.length !== 1 || pdfFiles.length === 0} // Updated disabled condition
-            className="w-full bg-blue-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
-          >
-            {status === 'polling' && <Loader2 className="w-5 h-5 animate-spin" />}
-            {status === 'uploading' ? '檔案上傳中...' : 
-             status === 'polling' ? '處理中...' : 
-             '開始處理'}
-          </button>
+          <div className="flex gap-4">
+            <button
+              onClick={handleSubmit}
+              disabled={status === 'uploading' || status === 'polling' || excelFiles.length !== 1 || pdfFiles.length === 0} // Updated disabled condition
+              className="flex-1 bg-blue-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
+            >
+              {status === 'polling' && <Loader2 className="w-5 h-5 animate-spin" />}
+              {status === 'uploading' ? '檔案上傳中...' :
+               status === 'polling' ? '處理中...' :
+               '開始處理'}
+            </button>
+            <button
+              onClick={handleDummyPreview}
+              disabled={excelFiles.length !== 1}
+              className="flex-1 bg-purple-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-purple-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
+            >
+              快速預覽（Dummy）
+            </button>
+          </div>
 
-          {(status === 'done' || status === 'error' || allFiles.length > 0) && (
+          {(status === 'done' || status === 'error' || allFiles.length > 0 || previewMode !== 'none') && (
             <button
               onClick={resetState}
               className="w-full bg-gray-200 text-gray-800 font-bold py-2 px-4 rounded-lg hover:bg-gray-300 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600 transition-colors"
@@ -276,9 +317,17 @@ const ValuePage = () => {
       </div>
 
       {/* Excel Preview Section */}
-      {status === 'done' && excelPreviewContent && (
+      {((previewMode === 'dummy' && excelPreviewContent) || (status === 'done' && excelPreviewContent)) && (
         <div className="mt-8 bg-white dark:bg-gray-800 p-8 rounded-lg shadow-md">
-          <h3 className="text-2xl font-bold mb-4">Excel 預覽</h3>
+          <h3 className="text-2xl font-bold mb-4 flex items-center gap-2">
+            Excel 預覽
+            {previewMode === 'dummy' && (
+              <span className="text-sm font-normal text-purple-600 bg-purple-100 px-2 py-1 rounded-full">Dummy 預覽（未經 AI/資料庫）</span>
+            )}
+            {status === 'done' && (
+              <span className="text-sm font-normal text-green-600 bg-green-100 px-2 py-1 rounded-full">正式資料</span>
+            )}
+          </h3>
           <div className="overflow-x-auto" dangerouslySetInnerHTML={{ __html: excelPreviewContent }} />
         </div>
       )}

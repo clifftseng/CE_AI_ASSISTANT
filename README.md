@@ -172,4 +172,3 @@ To integrate with the backend, `frontend/src/pages/Value2.tsx` (or similar compo
         }, [jobId]); // Re-run effect if jobId changes
         ```
     -   Do not reset the selected files before submission; only clear old messages.
-"# CE_AI_ASSISTANT"    # 建立一個簡單的 README.md
