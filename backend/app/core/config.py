@@ -30,6 +30,10 @@ class Settings(BaseSettings):
     S3_SECRET_ACCESS_KEY: str | None = None
     S3_BUCKET_NAME: str | None = None
 
+    # -- MongoDB Configurations --
+    MONGODB_URI: str = "mongodb://localhost:27017"
+    MONGODB_DB: str = "simplo_ai"
+
     class Config:
         env_file = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".env"))
         env_file_encoding = 'utf-8'

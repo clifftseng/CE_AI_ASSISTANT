@@ -18,3 +18,5 @@ azure-ai-formrecognizer==3.3.2
 azure-core
 openai==1.102.0
 jsonschema
+motor==3.5.*
+dnspython
