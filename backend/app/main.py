@@ -5,7 +5,7 @@ from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
-from app.routers import alt, value, download
+from app.routers import alt, value, download, parts, aliases
 from app.db.mongo import connect_to_mongo, close_mongo_connection, ping_mongodb
 
 # Ensure DATA_DIR exists
@@ -37,6 +37,8 @@ app.add_middleware(
 app.include_router(alt.router, prefix="/api/alt", tags=["alt"])
 app.include_router(value.router, prefix="/api/value", tags=["value"])
 app.include_router(download.router, prefix="/api/download", tags=["download"])
+app.include_router(parts.router, prefix="/api/parts", tags=["parts"])
+app.include_router(aliases.router, prefix="/api/aliases", tags=["aliases"])
 
 @app.get("/api/health", tags=["Health Check"])
 def health_check():
